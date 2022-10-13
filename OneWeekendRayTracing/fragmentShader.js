@@ -3,6 +3,7 @@ precision highp float;
 
 #define PI 3.1415926538
 #define MAX_FLOAT 1e5
+#define MAX_SPHERES 32
 
 out vec4 fragColor;
 uvec4 s0;
@@ -90,13 +91,13 @@ struct Cam {
 
 Cam create_camera() {
   // user specific settings
-  vec3 lookfrom = vec3(-2,2,1);
-  vec3 lookat = vec3(0,0,-1);
+  vec3 lookfrom = vec3(7,1,3);
+  vec3 lookat = vec3(0,0,0);
   vec3 vup = vec3(0,1,0);
-  float aperture = 0.0;
+  float aperture = 0.1;
   float focus_dist = length(lookfrom-lookat);
 
-  float vfov = 90.0;
+  float vfov = 20.0;
   float aspect_ratio = u_resolution.x / u_resolution.y;
   float theta = radians(vfov);
   float h = tan(theta/2.0);
@@ -176,35 +177,13 @@ bool sphere_hit(Ray r, Sphere s, float t_min, float t_max, inout Hit_record rec)
 }
 
 
-bool intersect_scene(const in Ray r, vec2 t_min_max, inout Hit_record h){
-  //TODO: maybe a scene_generator class? with some random generation?!
-  Sphere spheres[4];
-
-  Mat gm = Mat(vec3(0.8, 0.8, 0.0),0,0.0,0.0); // ground
-  Mat m = Mat(vec3(0.7, 0.3, 0.3),0,0.0,0.0); // lambertian
-  Mat m2 = Mat(vec3(0.8, 0.6, 0.2),2,0.0,1.5); // dielectric
-  Mat m3 = Mat(vec3(0.8, 0.8, 0.8),1,0.0,0.0); // non-fuzzy metal
-
-  spheres[0] = Sphere(vec3(0,-100.5,-1), 100.0, gm);
-  spheres[1] = Sphere(vec3(1,0,-1), 0.5,m2);
-  spheres[2] = Sphere(vec3(-1,0,-1), 0.5,m3);
-  spheres[3] = Sphere(vec3(0,0,-1), 0.5,m);
-
-  // for(int i=1;i<3;i++) {
-  //   Mat m = Mat(vec3(0.7, 0.3, 0.3));
-  //   spheres[i] = Sphere(vec3(i,0,-1), 0.5,m);
-  // }
-
+bool intersect_scene(const in Ray r, vec2 t_min_max, inout Hit_record h, Sphere spheres[MAX_SPHERES]){
   bool is_hit = false;
   
-  // manually hit test ground plane for preventing z-fight
-  // is_hit = sphere_hit(r, spheres[0], t_min_max.x,t_min_max.y, h) || is_hit;
-  
   // begin to test the array of spheres
-  for(int i=0;i<spheres.length();i++) {
+  for(int i=0;i<MAX_SPHERES;i++) {
     is_hit = sphere_hit(r, spheres[i], t_min_max.x,t_min_max.y, h) || is_hit;
   }
-  
   return is_hit;
 }
 
@@ -263,6 +242,46 @@ bool dielectric_scatter(Ray r, inout Hit_record rec, inout vec3 color, inout Ray
   return true;
 }
 
+void generate_scene(inout Sphere spheres[MAX_SPHERES]) {
+  Mat gm = Mat(vec3(0.8, 0.8, 0.0),0,0.0,0.0); // ground
+  Mat m = Mat(vec3(rand()*normalize(gl_FragCoord.xy).x, rand()*normalize(gl_FragCoord.xy).y, rand()*normalize(gl_FragCoord.xy).xx),0,0.0,0.0); // lambertian
+  Mat m2 = Mat(vec3(0.8, 0.6, 0.2),2,0.0,1.5); // dielectric
+  Mat m3 = Mat(vec3(0.8, 0.8, 0.8),1,0.0,0.0); // non-fuzzy metal
+
+  spheres[0] = Sphere(vec3(0,-100.5,-1), 100.0, gm);
+  spheres[1] = Sphere(vec3(1,0,-1), 0.5,m2);
+  spheres[2] = Sphere(vec3(-1,0,-1), 0.5,m3);
+  spheres[3] = Sphere(vec3(0,0,-1), 0.5,m);
+  spheres[4] = Sphere(vec3(1,-0.425,1), 0.1,m3);
+  spheres[5] = Sphere(vec3(1.2,-0.425,1.5), 0.1,m2);
+  spheres[6] = Sphere(vec3(.7,-0.425,0.4), 0.1,m);
+  spheres[7] = Sphere(vec3(3.5493666577285996,-0.425,0.4554761161422558),0.1,m);
+  spheres[8] = Sphere(vec3(2.5128185290075864,-0.425,1.2151440109292952),0.1,m);
+  spheres[9] = Sphere(vec3(0.7659060869779228,-0.425,2.9259590578838885),0.1,m);
+  spheres[10] = Sphere(vec3(1.8846576477970203,-0.425,0.4944050880106454),0.1,m);
+  spheres[11] = Sphere(vec3(2.49477816848579,-0.425,1.4309455958176605),0.1,m);
+  spheres[12] = Sphere(vec3(0.27055095434878584,-0.425,0.8460838829868926),0.1,m);
+  spheres[13] = Sphere(vec3(2.6287252984452705,-0.425,1.3847374452008552),0.1,m3);
+  spheres[14] = Sphere(vec3(3.713036649467681,-0.425,0.2349783882892469),0.1,m);
+  spheres[15] = Sphere(vec3(1.916918163610429,-0.425,3.934987801208316),0.1,m);
+  spheres[16] = Sphere(vec3(2.6186799535593908,-0.425,0.17645174100602912),0.1,m);
+  spheres[17] = Sphere(vec3(3.8276502111980566,-0.425,2.3684646162906713),0.1,m3);
+  spheres[18] = Sphere(vec3(3.470426434422105,-0.425,0.008726969358917813),0.1,m);
+  spheres[19] = Sphere(vec3(1.504155526808927,-0.425,0.8446961228332235),0.1,m);
+  spheres[20] = Sphere(vec3(3.6870208001878932,-0.425,2.9569788053923114),0.1,m2);
+  spheres[21] = Sphere(vec3(1.8583659558107835,-0.425,3.13570110085855),0.1,m);
+  spheres[22] = Sphere(vec3(2.6853317532529877,-0.425,3.4445610165891845),0.1,m);
+  spheres[23] = Sphere(vec3(3.383340277236363,-0.425,1.281321261696685),0.1,m);
+  spheres[24] = Sphere(vec3(3.7599122686415054,-0.425,0.06526739309395246),0.1,m3);
+  spheres[25] = Sphere(vec3(1.6881473857146005,-0.425,2.4294158474291043),0.1,m);
+  spheres[26] = Sphere(vec3(0.9264021047248132,-0.425,0.16097219708408428),0.1,m);
+  spheres[27] = Sphere(vec3(1.1396139097489018,-0.425,0.3352294976664467),0.1,m);
+  spheres[28] = Sphere(vec3(0.19975388381318915,-0.425,3.9431495552444673),0.1,m2);
+  spheres[29] = Sphere(vec3(0.312062404262921,-0.425,1.444810155652812),0.1,m);
+  spheres[30] = Sphere(vec3(1.6543865639758932,-0.425,0.1880416918764034),0.1,m);
+  spheres[31] = Sphere(vec3(0.18264170710631422,-0.425,0.9797867526024433),0.1,m3);
+}
+
 vec3 ray_color(Ray r) {
   Hit_record rec;
   vec2 t_min_max = vec2(0.001, MAX_FLOAT);
@@ -272,10 +291,13 @@ vec3 ray_color(Ray r) {
   r_in.origin = r.origin;
   r_in.direction = r.direction;
   
+  Sphere spheres[MAX_SPHERES];
+  generate_scene(spheres);
+  
   vec3 col = vec3(1.0);
   
   for(int i=0;i<depth;i++) {
-    bool is_hit = intersect_scene(r_in, t_min_max, rec);
+    bool is_hit = intersect_scene(r_in, t_min_max, rec, spheres);
     Ray scattered;
     if(is_hit) {
       // lambertian
