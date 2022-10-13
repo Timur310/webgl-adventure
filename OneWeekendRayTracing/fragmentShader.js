@@ -13,10 +13,10 @@ uniform int u_frame;
 void rng_initialize(vec2 p, int frame)
 {
     //white noise seed
-    // s0 = uvec4(p, uint(frame), uint(p.x) + uint(p.y));
+    s0 = uvec4(p, uint(frame), uint(p.x) + uint(p.y));
     
     //blue noise seed
-    s0 = uvec4(frame, frame*15843, frame*31 + 4566, frame*2345 + 58585);
+    // s0 = uvec4(frame, frame*15843, frame*31 + 4566, frame*2345 + 58585);
 }
 
 void pcg4d( inout uvec4 v ) {
@@ -61,6 +61,14 @@ vec3 random_in_hemisphere(vec3 normal) {
       return -in_unit_sphere;
 }
 
+vec3 random_unit_disk() {
+  while (true) {
+    vec3 p = vec3(rand(), rand(), 0);
+    if (pow(length(p), 2.0) >= 1.0) continue;
+    return p;
+  }
+}
+
 struct Ray {
   vec3 origin;
   vec3 direction;
@@ -75,25 +83,43 @@ struct Cam {
   vec3 horizontal;
   vec3 vertical;
   vec3 lower_left_corner;
+  float lens_radius;
+  vec3 u;
+  vec3 v;
 };
 
 Cam create_camera() {
+  // user specific settings
+  vec3 lookfrom = vec3(-2,2,1);
+  vec3 lookat = vec3(0,0,-1);
+  vec3 vup = vec3(0,1,0);
+  float aperture = 0.0;
+  float focus_dist = length(lookfrom-lookat);
+
   float vfov = 90.0;
   float aspect_ratio = u_resolution.x / u_resolution.y;
   float theta = radians(vfov);
   float h = tan(theta/2.0);
   float viewport_height = 2.0 * h;
   float viewport_width = aspect_ratio * viewport_height;
-  float focal_length = 1.0;
-  vec3 origin = vec3(0, 0, 0.6);
-  vec3 horizontal = vec3(viewport_width, 0, 0);
-  vec3 vertical = vec3(0, viewport_height, 0);
-  vec3 lower_left_corner = origin - horizontal/2.0 - vertical/2.0 - vec3(0, 0, focal_length);
-  return Cam(origin, horizontal, vertical, lower_left_corner); 
+
+  vec3 w = normalize(lookfrom - lookat);
+  vec3 u = normalize(cross(vup, w));
+  vec3 v = cross(w, u);
+
+  vec3 origin = lookfrom;
+  vec3 horizontal = focus_dist * viewport_width * u;
+  vec3 vertical = focus_dist * viewport_height * v;
+  vec3 lower_left_corner = origin - horizontal/2.0 - vertical/2.0 - focus_dist*w;
+
+  float lens_radius = aperture / 2.0;
+  return Cam(origin,horizontal,vertical,lower_left_corner, lens_radius,u,v);
 }
 
 Ray get_cam_ray(vec2 uv, Cam cam) {
-  return Ray(cam.origin, cam.lower_left_corner + uv.x*cam.horizontal + uv.y*cam.vertical - cam.origin);
+  vec3 rd = cam.lens_radius * random_unit_disk();
+  vec3 offset = cam.u * rd.x + cam.v * rd.y;
+  return Ray(cam.origin + offset,cam.lower_left_corner + uv.x*cam.horizontal + uv.y*cam.vertical - cam.origin - offset);
 }
 
 struct Mat {
@@ -177,8 +203,8 @@ bool intersect_scene(const in Ray r, vec2 t_min_max, inout Hit_record h){
   // begin to test the array of spheres
   for(int i=0;i<spheres.length();i++) {
     is_hit = sphere_hit(r, spheres[i], t_min_max.x,t_min_max.y, h) || is_hit;
-  
   }
+  
   return is_hit;
 }
 
