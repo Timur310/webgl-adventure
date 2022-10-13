@@ -183,7 +183,7 @@ bool intersect_scene(const in Ray r, vec2 t_min_max, inout Hit_record h){
   Mat gm = Mat(vec3(0.8, 0.8, 0.0),0,0.0,0.0); // ground
   Mat m = Mat(vec3(0.7, 0.3, 0.3),0,0.0,0.0); // lambertian
   Mat m2 = Mat(vec3(0.8, 0.6, 0.2),2,0.0,1.5); // dielectric
-  Mat m3 = Mat(vec3(0.8, 0.8, 0.8),1,0.5,0.0); // fuzzy metal
+  Mat m3 = Mat(vec3(0.8, 0.8, 0.8),1,0.0,0.0); // non-fuzzy metal
 
   spheres[0] = Sphere(vec3(0,-100.5,-1), 100.0, gm);
   spheres[1] = Sphere(vec3(1,0,-1), 0.5,m2);
