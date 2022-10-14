@@ -91,10 +91,10 @@ struct Cam {
 
 Cam create_camera() {
   // user specific settings
-  vec3 lookfrom = vec3(7,1,3);
-  vec3 lookat = vec3(0,0,0);
+  vec3 lookfrom = vec3(5,1,3);
+  vec3 lookat = vec3(1,0,0);
   vec3 vup = vec3(0,1,0);
-  float aperture = 0.1;
+  float aperture = 0.2;
   float focus_dist = length(lookfrom-lookat);
 
   float vfov = 20.0;
@@ -231,7 +231,6 @@ bool metal_scatter(Ray r, inout Hit_record rec, inout vec3 color, inout Ray scat
 }
 
 bool dielectric_scatter(Ray r, inout Hit_record rec, inout vec3 color, inout Ray scattered) {
-  color = vec3(1.0, 1.0, 1.0);
   float refraction_ratio = rec.front_face ? (1.0/rec.matPointer.ir) : rec.matPointer.ir;
   vec3 unit_direction = normalize(r.direction);
   float cos_theta = min(dot(-unit_direction, rec.normal), 1.0);
@@ -244,6 +243,7 @@ bool dielectric_scatter(Ray r, inout Hit_record rec, inout vec3 color, inout Ray
   else {
     direction = refract(unit_direction, rec.normal, refraction_ratio);
   }
+  color *= vec3(1.0, 1.0, 1.0);
   scattered = Ray(rec.p, direction);
   return true;
 }
@@ -262,17 +262,17 @@ void generate_scene(inout Sphere spheres[MAX_SPHERES]) {
   spheres[5] = Sphere(vec3(1.2,-0.425,1.5), 0.1,m2);
   spheres[6] = Sphere(vec3(.7,-0.425,0.4), 0.1,m);
   spheres[7] = Sphere(vec3(3.5493666577285996,-0.425,0.4554761161422558),0.1,m);
-  spheres[8] = Sphere(vec3(2.5128185290075864,-0.425,1.2151440109292952),0.1,m);
+  spheres[8] = Sphere(vec3(2.5128185290075864,-0.425,1.2151440109292952),0.1,m2);
   spheres[9] = Sphere(vec3(0.7659060869779228,-0.425,2.9259590578838885),0.1,m);
-  spheres[10] = Sphere(vec3(1.8846576477970203,-0.425,0.4944050880106454),0.1,m);
+  spheres[10] = Sphere(vec3(1.8846576477970203,-0.425,0.4944050880106454),0.1,m3);
   spheres[11] = Sphere(vec3(2.49477816848579,-0.425,1.4309455958176605),0.1,m);
   spheres[12] = Sphere(vec3(0.27055095434878584,-0.425,0.8460838829868926),0.1,m);
   spheres[13] = Sphere(vec3(2.6287252984452705,-0.425,1.3847374452008552),0.1,m3);
   spheres[14] = Sphere(vec3(3.713036649467681,-0.425,0.2349783882892469),0.1,m);
-  spheres[15] = Sphere(vec3(1.916918163610429,-0.425,3.934987801208316),0.1,m);
+  spheres[15] = Sphere(vec3(1.916918163610429,-0.425,3.934987801208316),0.1,m2);
   spheres[16] = Sphere(vec3(2.6186799535593908,-0.425,0.17645174100602912),0.1,m);
   spheres[17] = Sphere(vec3(3.8276502111980566,-0.425,2.3684646162906713),0.1,m3);
-  spheres[18] = Sphere(vec3(3.470426434422105,-0.425,0.008726969358917813),0.1,m);
+  spheres[18] = Sphere(vec3(3.470426434422105,-0.425,0.008726969358917813),0.1,m2);
   spheres[19] = Sphere(vec3(1.504155526808927,-0.425,0.8446961228332235),0.1,m);
   spheres[20] = Sphere(vec3(3.6870208001878932,-0.425,2.9569788053923114),0.1,m2);
   spheres[21] = Sphere(vec3(1.8583659558107835,-0.425,3.13570110085855),0.1,m);
@@ -280,11 +280,11 @@ void generate_scene(inout Sphere spheres[MAX_SPHERES]) {
   spheres[23] = Sphere(vec3(3.383340277236363,-0.425,1.281321261696685),0.1,m);
   spheres[24] = Sphere(vec3(3.7599122686415054,-0.425,0.06526739309395246),0.1,m3);
   spheres[25] = Sphere(vec3(1.6881473857146005,-0.425,2.4294158474291043),0.1,m);
-  spheres[26] = Sphere(vec3(0.9264021047248132,-0.425,0.16097219708408428),0.1,m);
+  spheres[26] = Sphere(vec3(0.9264021047248132,-0.425,0.16097219708408428),0.1,m3);
   spheres[27] = Sphere(vec3(1.1396139097489018,-0.425,0.3352294976664467),0.1,m);
   spheres[28] = Sphere(vec3(0.19975388381318915,-0.425,3.9431495552444673),0.1,m2);
   spheres[29] = Sphere(vec3(0.312062404262921,-0.425,1.444810155652812),0.1,m);
-  spheres[30] = Sphere(vec3(1.6543865639758932,-0.425,0.1880416918764034),0.1,m);
+  spheres[30] = Sphere(vec3(1.6543865639758932,-0.425,0.1880416918764034),0.1,m2);
   spheres[31] = Sphere(vec3(0.18264170710631422,-0.425,0.9797867526024433),0.1,m3);
 }
 
@@ -349,7 +349,7 @@ vec3 color_correction(vec3 color, int samples) {
 void main() {
   rng_initialize(gl_FragCoord.xy,u_frame);
   Cam cam = create_camera();
-  int samples = 50;
+  int samples = 100;
   vec3 outColor = vec3(0,0,0);
   
   for(int i=0;i<samples;++i) {
