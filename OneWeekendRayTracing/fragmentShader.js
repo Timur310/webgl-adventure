@@ -177,14 +177,20 @@ bool sphere_hit(Ray r, Sphere s, float t_min, float t_max, inout Hit_record rec)
 }
 
 
-bool intersect_scene(const in Ray r, vec2 t_min_max, inout Hit_record h, Sphere spheres[MAX_SPHERES]){
-  bool is_hit = false;
+bool intersect_scene(const in Ray r, vec2 t_min_max, out Hit_record rec, Sphere spheres[MAX_SPHERES]){
+  Hit_record temp_rec;
+  bool hit_anything = false;
+  float closest_so_far = t_min_max.y;
   
   // begin to test the array of spheres
   for(int i=0;i<MAX_SPHERES;i++) {
-    is_hit = sphere_hit(r, spheres[i], t_min_max.x,t_min_max.y, h) || is_hit;
+    if(sphere_hit(r, spheres[i], t_min_max.x,closest_so_far, temp_rec)) {
+      hit_anything = true;
+      closest_so_far = temp_rec.t;
+      rec = temp_rec;
+    }
   }
-  return is_hit;
+  return hit_anything;
 }
 
 bool near_zero(vec3 e) {
