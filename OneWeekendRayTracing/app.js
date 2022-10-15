@@ -29,8 +29,8 @@ function createShader(gl, type, source) {
 
 function initGL() {
     const canvas = document.getElementById('canvas');
-    canvas.width = 800;
-    canvas.height = 600;
+    canvas.width = 600;
+    canvas.height = 300;
     const gl = canvas.getContext('webgl2');
 
     if (!gl) {
@@ -118,7 +118,7 @@ function initGL() {
         requestAnimationFrame(render);
     }
 
-    // render();
+    render();
 }
 
 initGL()

@@ -4,6 +4,7 @@ precision highp float;
 #define PI 3.1415926538
 #define MAX_FLOAT 1e5
 #define MAX_SPHERES 32
+#define ANIM false
 
 out vec4 fragColor;
 uvec4 s0;
@@ -91,7 +92,12 @@ struct Cam {
 
 Cam create_camera() {
   // user specific settings
-  vec3 lookfrom = vec3(5,1,3);
+  vec3 lookfrom;
+  if(ANIM) {
+    lookfrom = vec3(4.0 * sin(float(u_frame)/50.0),1,2);
+  } else {
+    lookfrom = vec3(5,1,3);
+  }
   vec3 lookat = vec3(1,0,0);
   vec3 vup = vec3(0,1,0);
   float aperture = 0.2;
@@ -349,7 +355,7 @@ vec3 color_correction(vec3 color, int samples) {
 void main() {
   rng_initialize(gl_FragCoord.xy,u_frame);
   Cam cam = create_camera();
-  int samples = 100;
+  int samples = 10;
   vec3 outColor = vec3(0,0,0);
   
   for(int i=0;i<samples;++i) {
